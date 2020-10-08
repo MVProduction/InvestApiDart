@@ -15,6 +15,11 @@ class ValueWithCurrency {
   /// Конструктор
   ValueWithCurrency(this.currency, this.value);
 
+  /// Преобразует в json
+  Map<String, dynamic> toJson() {
+    return {'currency': currency, 'value': value};
+  }
+
   /// Переводит в строку
   @override
   String toString() {
