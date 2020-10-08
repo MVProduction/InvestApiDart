@@ -1,0 +1,13 @@
+name: invest_api_dart
+description: API для работы с инвестициями для Dart
+version: 0.1.0
+# homepage: https://www.example.com
+
+environment:
+  sdk: '>=2.8.1 <3.0.0'
+
+dependencies:
+  dio:
+
+dev_dependencies:
+  pedantic: ^1.9.0
