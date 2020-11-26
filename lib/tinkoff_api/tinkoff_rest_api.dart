@@ -2,6 +2,8 @@ import 'package:dio/dio.dart';
 import 'package:invest_api_dart/tinkoff_api/tinkoff_api_constants.dart';
 import 'package:invest_api_dart/tinkoff_api/tinkoff_candle_data.dart';
 import 'package:invest_api_dart/tinkoff_api/tinkoff_candle_interval.dart';
+import 'package:invest_api_dart/tinkoff_api/tinkoff_instrument_data.dart';
+import 'package:invest_api_dart/tinkoff_api/tinkoff_operation_data.dart';
 import 'package:invest_api_dart/tinkoff_api/tinkoff_portfolio_currency_position.dart';
 
 import 'tinkoff_portfolio_position.dart';
@@ -24,6 +26,20 @@ class TinkoffRestApi {
         options: Options(
             contentType: 'application/json',
             headers: {'Authorization': 'Bearer $_token'}));
+  }
+
+  /// Возвращает информацию по акциям
+  Future<List<TinkoffInstrumentData>> getMarketStocks() async {
+    final response = await _getRequest('/market/stocks');
+    final stocks = response.data['payload']['instruments'] as List<dynamic>;
+
+    final res = <TinkoffInstrumentData>[];
+
+    for (final stock in stocks) {
+      res.add(TinkoffInstrumentData.fromJson(stock));
+    }
+
+    return res;
   }
 
   /// Возвращает позиции по портфелю
@@ -68,6 +84,33 @@ class TinkoffRestApi {
     for (final candle in candles) {
       res.add(TinkoffCandleData.fromJson(candle));
     }
+    return res;
+  }
+
+  /// Возвращает операции совершённые пользователем в системе
+  Future<List<TinkoffOperationData>> getOperations(DateTime from, DateTime to,
+      {String figi}) async {
+    final fromIso = from.toUtc().toIso8601String();
+    final toIso = to.toUtc().toIso8601String();
+
+    final params = <String, dynamic>{
+      'from': fromIso,
+      'to': toIso,
+    };
+
+    if (figi != null) params['figi'] = figi;
+
+    final response = await _getRequest('/operations', params: params);
+
+    final operations = response.data['payload']['operations'] as List<dynamic>;
+    final res = <TinkoffOperationData>[];
+
+    for (final operation in operations) {
+      if (operation['operationType'] == 'Dividend') {
+        res.add(TinkoffDividendOperationData.fromJson(operation));
+      }
+    }
+
     return res;
   }
 }
